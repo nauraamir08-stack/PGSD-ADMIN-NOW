@@ -1,6 +1,6 @@
 const db = window.supabase.createClient(window.HEROCLASS_SUPABASE_URL, window.HEROCLASS_SUPABASE_KEY);
 const BUCKET = 'heroclass-media';
-const state = { members: [], schedules: [], gallery: [], uploads: { member: '', gallery: '' } };
+const state = { members: [], schedules: [], gallery: [], uploads: { member: '', gallery: [] } };
 const $ = (selector) => document.querySelector(selector);
 
 function make(tag, className, text) {
@@ -109,7 +109,7 @@ function resetForm(type) {
   const form = formFor(type); form.reset(); form.elements.id.value = '';
   const prefix = type === 'member' ? 'member' : type === 'gallery' ? 'gallery' : '';
   if (prefix) {
-    state.uploads[prefix] = '';
+    state.uploads[prefix] = prefix === 'gallery' ? [] : '';
     $(`#${prefix}-upload-status`).textContent = prefix === 'member' ? 'Foto membantu teman mengenali profil anggota.' : 'Unggah foto untuk momen ini.';
     $(`#remove-${prefix}-photo`).classList.add('hidden');
   }
@@ -131,7 +131,7 @@ function editRecord(type, id) {
   if (type === 'gallery') { form.elements.title.value = item.title; form.elements.caption.value = item.caption || ''; form.elements.date.value = item.event_date || ''; }
   const prefix = type === 'member' ? 'member' : type === 'gallery' ? 'gallery' : '';
   if (prefix) {
-    state.uploads[prefix] = item.photo_path || '';
+    state.uploads[prefix] = prefix === 'gallery' ? (item.photo_path ? [item.photo_path] : []) : (item.photo_path || '');
     $(`#${prefix}-upload-status`).textContent = item.photo_path ? 'Foto tersimpan. Pilih file baru untuk menggantinya.' : 'Belum ada foto.';
     $(`#remove-${prefix}-photo`).classList.toggle('hidden', !item.photo_path);
     if (prefix === 'member') {
@@ -149,24 +149,34 @@ function editRecord(type, id) {
 function extension(file) { return (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
 async function upload(input, type) {
-  const file = input.files?.[0]; if (!file) return;
+  const files = [...(input.files || [])]; if (!files.length) return;
   const status = $(`#${type}-upload-status`);
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+  if (files.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024)) {
     status.textContent = 'Gunakan foto JPG, PNG, atau WebP dengan ukuran maksimal 5 MB.'; input.value = ''; return;
   }
-  status.textContent = 'Mengunggah foto…';
-  const path = `${type}/${crypto.randomUUID()}.${extension(file)}`;
-  const { error } = await db.storage.from(BUCKET).upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+  status.textContent = files.length > 1 ? `Mengunggah ${files.length} foto…` : 'Mengunggah foto…';
+  const paths = [];
+  for (const file of files) {
+    const path = `${type}/${crypto.randomUUID()}.${extension(file)}`;
+    const { error } = await db.storage.from(BUCKET).upload(path, file, { cacheControl: '3600', contentType: file.type, upsert: false });
+    if (error) { status.textContent = error.message; input.value = ''; return; }
+    paths.push(path);
+  }
   input.value = '';
-  if (error) { status.textContent = error.message; return; }
-  state.uploads[type] = path; status.textContent = 'Foto siap disimpan.'; $(`#remove-${type}-photo`).classList.remove('hidden');
-  if (type === 'member') { const image = make('img', 'record-photo'); image.src = publicUrl(path); image.alt = 'Pratinjau foto'; $('#member-avatar').replaceChildren(image); }
+  if (type === 'gallery') {
+    state.uploads.gallery = [...state.uploads.gallery, ...paths];
+    status.textContent = `${state.uploads.gallery.length} foto siap disimpan sebagai galeri.`;
+  } else {
+    state.uploads.member = paths[0]; status.textContent = 'Foto siap disimpan.';
+    const image = make('img', 'record-photo'); image.src = publicUrl(paths[0]); image.alt = 'Pratinjau foto'; $('#member-avatar').replaceChildren(image);
+  }
+  $(`#remove-${type}-photo`).classList.remove('hidden');
 }
 
 function payload(type, form) {
   if (type === 'member') return { name: form.elements.name.value.trim(), role: form.elements.role.value.trim(), photo_path: state.uploads.member || null };
   if (type === 'schedule') return { day: form.elements.day.value, course: form.elements.course.value.trim(), start_time: form.elements.start.value, end_time: form.elements.end.value, room: form.elements.room.value.trim() };
-  return { title: form.elements.title.value.trim(), caption: form.elements.caption.value.trim(), event_date: form.elements.date.value || null, photo_path: state.uploads.gallery || null };
+  return { title: form.elements.title.value.trim(), caption: form.elements.caption.value.trim(), event_date: form.elements.date.value || null };
 }
 
 function table(type) { return type === 'member' ? 'class_members' : type === 'schedule' ? 'class_schedules' : 'class_gallery'; }
@@ -175,7 +185,14 @@ async function save(type, form) {
   const button = form.querySelector('[type=submit]'); button.disabled = true;
   const id = form.elements.id.value; const previous = id ? collection(type).find((item) => item.id === id) : null;
   const row = payload(type, form);
-  const query = id ? db.from(table(type)).update(row).eq('id', id) : db.from(table(type)).insert(row);
+  if (type === 'gallery') {
+    const photos = state.uploads.gallery;
+    if (!id && !photos.length) { notice($('#global-status'), 'Pilih minimal satu foto untuk galeri.', 'error'); button.disabled = false; return; }
+    if (id) row.photo_path = photos[0] || null;
+  } else if (type === 'member') row.photo_path = state.uploads.member || null;
+  const query = id ? db.from(table(type)).update(row).eq('id', id) : type === 'gallery'
+    ? db.from(table(type)).insert(state.uploads.gallery.map((photo_path) => ({ ...row, photo_path })))
+    : db.from(table(type)).insert(row);
   const { error } = await query;
   if (!error && previous?.photo_path && previous.photo_path !== row.photo_path) await db.storage.from(BUCKET).remove([previous.photo_path]);
   if (error) notice($('#global-status'), error.message, 'error');
@@ -209,9 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   for (const type of ['member', 'schedule', 'gallery']) formFor(type).addEventListener('submit', (event) => { event.preventDefault(); save(type, event.currentTarget); });
   $('#member-photo').addEventListener('change', (event) => upload(event.currentTarget, 'member'));
+  $('#gallery-photo').multiple = true;
+  $('#gallery-upload-status').textContent = 'Pilih satu atau beberapa foto JPG, PNG, atau WebP (maks. 5 MB per foto).';
   $('#gallery-photo').addEventListener('change', (event) => upload(event.currentTarget, 'gallery'));
   for (const type of ['member', 'schedule', 'gallery']) $(`#cancel-${type}`).addEventListener('click', () => resetForm(type));
-  for (const type of ['member', 'gallery']) $(`#remove-${type}-photo`).addEventListener('click', () => { state.uploads[type] = ''; $(`#${type}-upload-status`).textContent = 'Foto akan dihapus saat perubahan disimpan.'; $(`#remove-${type}-photo`).classList.add('hidden'); if (type === 'member') $('#member-avatar').replaceChildren(document.createTextNode('H')); });
+  for (const type of ['member', 'gallery']) $(`#remove-${type}-photo`).addEventListener('click', () => { state.uploads[type] = type === 'gallery' ? [] : ''; $(`#${type}-upload-status`).textContent = type === 'gallery' ? 'Foto dipilih dihapus. Pilih foto baru untuk disimpan.' : 'Foto akan dihapus saat perubahan disimpan.'; $(`#remove-${type}-photo`).classList.add('hidden'); if (type === 'member') $('#member-avatar').replaceChildren(document.createTextNode('H')); });
   $('#admin-nav').addEventListener('click', (event) => { const link = event.target.closest('a[data-page]'); if (link) { event.preventDefault(); navigate(link.dataset.page); } });
   $('#logout').addEventListener('click', async () => { await db.auth.signOut(); showLogin('Kamu sudah keluar.', 'success'); history.replaceState(null, '', location.pathname); });
   $('#password-form').addEventListener('submit', async (event) => {
