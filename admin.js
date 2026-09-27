@@ -1,4 +1,7 @@
 const db = window.supabase.createClient(window.HEROCLASS_SUPABASE_URL, window.HEROCLASS_SUPABASE_KEY);
+if (!document.querySelector('link[href="./admin-enhancements.css"]')) {
+  const enhancements = document.createElement('link'); enhancements.rel = 'stylesheet'; enhancements.href = './admin-enhancements.css'; document.head.append(enhancements);
+}
 const BUCKET = 'heroclass-media';
 const state = { members: [], schedules: [], gallery: [], uploads: { member: '', gallery: [] } };
 const $ = (selector) => document.querySelector(selector);

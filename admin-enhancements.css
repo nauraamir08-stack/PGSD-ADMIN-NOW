@@ -1,0 +1,2 @@
+/* Lapisan dekoratif ringan untuk ruang kerja admin. */
+.workspace{background:radial-gradient(circle at 94% 8%,#d9b05820 0 10%,transparent 28%),radial-gradient(circle at 5% 92%,#5a9aae15 0 13%,transparent 29%),#f5f7f8}.sidebar{background:linear-gradient(180deg,#edf2f4,#e7eef1)}.card{background:linear-gradient(145deg,#fff,#fbfcfc)}.welcome{position:relative}.welcome::after{content:"";position:absolute;right:0;bottom:-14px;width:112px;height:2px;background:linear-gradient(90deg,transparent,#d9b058)}
