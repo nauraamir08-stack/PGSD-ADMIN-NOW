@@ -36,9 +36,9 @@ function showApp() {
 }
 
 async function isAdmin() {
-  const { data: userData } = await db.auth.getUser();
-  if (!userData.user) return false;
-  const { data, error } = await db.from('admin_users').select('user_id').eq('user_id', userData.user.id).maybeSingle();
+  const { data: sessionData } = await db.auth.getSession();
+  if (!sessionData.session?.user) return false;
+  const { data, error } = await db.from('admin_users').select('user_id').eq('user_id', sessionData.session.user.id).maybeSingle();
   if (error) throw error;
   return Boolean(data);
 }
@@ -51,7 +51,10 @@ async function requireSession() {
       return false;
     }
     showApp();
-    await refresh();
+    refresh().catch((error) => {
+      console.error(error);
+      notice($('#global-status'), 'Data belum dapat dimuat. Periksa koneksi internet lalu muat ulang halaman.', 'error');
+    });
     return true;
   } catch (error) {
     console.error(error);
@@ -226,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#login-form').addEventListener('submit', async (event) => {
     event.preventDefault(); const button = event.currentTarget.querySelector('button'); button.disabled = true;
     try {
+      notice($('#login-status'), 'Memeriksa akun admin…');
       const { error } = await db.auth.signInWithPassword({ email: usernameEmail($('#login-username').value), password: $('#login-password').value });
       if (error) notice($('#login-status'), 'Username atau kata sandi tidak sesuai.', 'error'); else await requireSession();
     } catch (error) { notice($('#login-status'), error.message, 'error'); }
