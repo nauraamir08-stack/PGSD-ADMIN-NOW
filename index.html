@@ -1,20 +1,443 @@
 <!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10283d">
-<title>Admin — PGSD Heroclass</title><meta name="description" content="Kelola anggota, pengurus, jadwal, foto, dan galeri PGSD Heroclass.">
-<link rel="icon" href="https://pgsdheroclass.web.id/logo-heroclass.jpeg" type="image/jpeg"><link rel="stylesheet" href="./admin.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>window.HEROCLASS_SUPABASE_URL='https://xwhztlpacoclpksehdvf.supabase.co';window.HEROCLASS_SUPABASE_KEY='sb_publishable_zFwURi3z7OQLZq2IrJLW5w_jsgkIli5';</script><script src="./admin.js" defer></script>
-</head><body>
-<main class="sign-in-wrap" id="sign-in"><a class="logo" href="https://pgsdheroclass.web.id/" aria-label="Lihat web utama"><img src="https://pgsdheroclass.web.id/logo-heroclass.jpeg" alt="Logo Heroclass"><span>HEROCLASS<small>PGSD H · UNESA</small></span></a><section class="sign-in-card"><span class="eyebrow">AREA PENGELOLA</span><h1>Selamat datang.</h1><p>Masuk untuk memperbarui profil kelas Heroclass.</p><form id="login-form"><label for="login-username">Username admin</label><input id="login-username" name="username" type="text" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]+" placeholder="Contoh: adminkelas"><label for="login-password">Kata sandi</label><input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128"><button class="primary" type="submit">Masuk <span aria-hidden="true">↗</span></button></form><p id="login-status" class="status" role="status" aria-live="polite"></p></section><p class="sign-in-foot"><a href="https://pgsdheroclass.web.id/">Kembali ke profil Heroclass ↗</a></p></main>
-<div class="app hidden" id="admin-app"><header class="topbar"><a class="logo" href="https://pgsdheroclass.web.id/"><img src="https://pgsdheroclass.web.id/logo-heroclass.jpeg" alt=""><span>HEROCLASS<small>ADMIN · PGSD H</small></span></a><div class="top-actions"><a class="view-site" href="https://pgsdheroclass.web.id/" target="_blank" rel="noreferrer">Lihat web <span aria-hidden="true">↗</span></a><button class="quiet" id="logout">Keluar</button></div></header>
-<div class="layout"><aside class="sidebar"><p class="eyebrow">RUANG KERJA</p><nav aria-label="Bagian admin" id="admin-nav"><a href="#anggota" data-page="anggota" aria-current="page">01 <span>Anggota &amp; pengurus</span></a><a href="#jadwal" data-page="jadwal">02 <span>Jadwal kuliah</span></a><a href="#galeri" data-page="galeri">03 <span>Galeri</span></a><a href="#keamanan" data-page="keamanan">04 <span>Keamanan</span></a></nav><div class="sidebar-note">Perubahan tersimpan dan ditampilkan pada web Heroclass.</div></aside>
-<main class="workspace"><div class="welcome"><div><span class="eyebrow">PGSD H · UNIVERSITAS NEGERI SURABAYA</span><h1 id="page-title">Anggota &amp; pengurus</h1><p id="page-description">Kelola nama, jabatan, dan foto profil kelas.</p></div><div class="save-indicator"><span></span> Tersambung</div></div><p class="status global-status" id="global-status" role="status" aria-live="polite"></p>
-<section class="panel-section" id="section-anggota"><div class="panel-grid"><div class="card editor-card"><div class="card-head"><div><span class="eyebrow">PROFIL KELAS</span><h2 id="member-form-title">Tambah anggota</h2></div><button type="button" class="text-button hidden" id="cancel-member">Batal edit</button></div><form id="member-form" class="form-grid"><input type="hidden" name="id"><label>Nama lengkap<input name="name" maxlength="100" autocomplete="name" required placeholder="Nama anggota"></label><label>Jabatan pengurus <span class="optional">Opsional</span><input name="role" maxlength="80" placeholder="Contoh: Ketua kelas"></label><fieldset class="photo-field"><legend>Foto profil <span class="optional">JPG, PNG, WebP · maks. 5 MB</span></legend><div class="photo-row"><span class="avatar-placeholder" id="member-avatar">H</span><div><label class="upload-button" for="member-photo">Pilih foto</label><input id="member-photo" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden"><p class="upload-status" id="member-upload-status">Foto membantu teman mengenali profil anggota.</p><button type="button" class="text-button hidden" id="remove-member-photo">Hapus foto</button></div></div></fieldset><button class="primary" type="submit" id="member-save">Simpan anggota</button></form></div><div class="card list-card"><div class="card-head"><div><span class="eyebrow">DAFTAR KELAS</span><h2>Anggota tersimpan</h2></div><span class="count" id="member-count">0</span></div><div id="member-list" class="record-list"><p class="empty-copy">Memuat daftar…</p></div></div></div></section>
-<section class="panel-section hidden" id="section-jadwal"><div class="panel-grid"><div class="card editor-card"><div class="card-head"><div><span class="eyebrow">AKADEMIK</span><h2 id="schedule-form-title">Tambah jadwal</h2></div><button type="button" class="text-button hidden" id="cancel-schedule">Batal edit</button></div><form id="schedule-form" class="form-grid"><input type="hidden" name="id"><label>Hari<select name="day" required><option value="">Pilih hari</option><option>Senin</option><option>Selasa</option><option>Rabu</option><option>Kamis</option><option>Jumat</option><option>Sabtu</option></select></label><label>Mata kuliah<input name="course" required maxlength="100" placeholder="Nama mata kuliah"></label><div class="time-grid"><label>Mulai<input name="start" type="time" required></label><label>Selesai<input name="end" type="time" required></label></div><label>Ruang <span class="optional">Opsional</span><input name="room" maxlength="100" placeholder="Contoh: Gedung A · 204"></label><button class="primary" type="submit">Simpan jadwal</button></form></div><div class="card list-card"><div class="card-head"><div><span class="eyebrow">MINGGU KULIAH</span><h2>Jadwal tersimpan</h2></div></div><div id="schedule-list" class="record-list"></div></div></div></section>
-<section class="panel-section hidden" id="section-galeri"><div class="panel-grid"><div class="card editor-card"><div class="card-head"><div><span class="eyebrow">CERITA KELAS</span><h2 id="gallery-form-title">Tambah momen</h2></div><button type="button" class="text-button hidden" id="cancel-gallery">Batal edit</button></div><form id="gallery-form" class="form-grid"><input type="hidden" name="id"><label>Judul momen<input name="title" required maxlength="120" placeholder="Contoh: Hari pertama kuliah"></label><label>Cerita <span class="optional">Opsional</span><textarea name="caption" maxlength="500" rows="3" placeholder="Ceritakan sedikit tentang momen ini"></textarea></label><label>Tanggal <span class="optional">Opsional</span><input name="date" type="date"></label><fieldset class="photo-field"><legend>Foto momen <span class="optional">JPG, PNG, WebP · maks. 5 MB</span></legend><label class="upload-button" for="gallery-photo">Pilih foto</label><input id="gallery-photo" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden"><p id="gallery-upload-status" class="upload-status">Unggah foto untuk momen ini.</p><button type="button" class="text-button hidden" id="remove-gallery-photo">Hapus foto</button></fieldset><button class="primary" type="submit">Simpan momen</button></form></div><div class="card list-card"><div class="card-head"><div><span class="eyebrow">ALBUM HEROCLASS</span><h2>Momen tersimpan</h2></div></div><div id="gallery-list" class="record-list"></div></div></div></section>
-<section class="panel-section hidden" id="section-keamanan"><div class="panel-grid"><div class="card editor-card"><div class="card-head"><div><span class="eyebrow">AKUN ADMIN</span><h2>Ganti kata sandi</h2></div></div><p class="section-help">Gunakan kata sandi baru dengan minimal 12 karakter. Setelah diganti, sesi admin lain akan berakhir.</p><form id="password-form" class="form-grid"><label>Kata sandi saat ini<input name="current" type="password" autocomplete="current-password" required></label><label>Kata sandi baru<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label><label>Ulangi kata sandi baru<input name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label><button class="primary" type="submit">Perbarui kata sandi</button><p id="password-status" class="status" role="status"></p></form></div><div class="card list-card security-card"><span class="eyebrow">PENGELOLAAN AKSES</span><h2>Admin terlindungi</h2><p>Kata sandi tidak disimpan di perangkat. Kamu akan keluar otomatis setelah 8 jam tanpa sesi aktif.</p><p>Untuk keamanan, pakai kata sandi yang hanya digunakan oleh pengelola tepercaya.</p></div></div></section>
-</main></div></div>
-</body></html>
-
-
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#10283d">
+    <title>
+      Admin — PGSD Heroclass
+    </title>
+    <meta name="description" content="Kelola anggota, pengurus, jadwal, foto, dan galeri PGSD Heroclass.">
+    <link rel="icon" href="https://pgsdheroclass.web.id/logo-heroclass.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="./admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      window.HEROCLASS_SUPABASE_URL='https://xwhztlpacoclpksehdvf.supabase.co';window.HEROCLASS_SUPABASE_KEY='sb_publishable_zFwURi3z7OQLZq2IrJLW5w_jsgkIli5';
+    </script>
+    <script src="./admin.js" defer></script>
+  </head>
+  <body>
+    <main class="sign-in-wrap" id="sign-in">
+      <a class="logo" href="https://pgsdheroclass.web.id/" aria-label="Lihat web utama">
+        <img src="https://pgsdheroclass.web.id/logo-heroclass.jpeg" alt="Logo Heroclass">
+        <span>
+          HEROCLASS
+          <small>
+            PGSD H · UNESA
+          </small>
+        </span>
+      </a>
+      <section class="sign-in-card">
+        <span class="eyebrow">
+          AREA PENGELOLA
+        </span>
+        <h1>
+          Selamat datang.
+        </h1>
+        <p>
+          Masuk untuk memperbarui profil kelas Heroclass.
+        </p>
+        <form id="login-form">
+          <label for="login-username">
+            Username admin
+          </label>
+          <input id="login-username" name="username" type="text" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]+" placeholder="Contoh: adminkelas">
+          <label for="login-password">
+            Kata sandi
+          </label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128">
+          <button class="primary" type="submit">
+            Masuk
+            <span aria-hidden="true">
+              ↗
+            </span>
+          </button>
+        </form>
+        <p id="login-status" class="status" role="status" aria-live="polite">
+        </p>
+      </section>
+      <p class="sign-in-foot">
+        <a href="https://pgsdheroclass.web.id/">
+          Kembali ke profil Heroclass ↗
+        </a>
+      </p>
+    </main>
+    <div class="app hidden" id="admin-app">
+      <header class="topbar">
+        <a class="logo" href="https://pgsdheroclass.web.id/">
+          <img src="https://pgsdheroclass.web.id/logo-heroclass.jpeg" alt="">
+          <span>
+            HEROCLASS
+            <small>
+              ADMIN · PGSD H
+            </small>
+          </span>
+        </a>
+        <div class="top-actions">
+          <a class="view-site" href="https://pgsdheroclass.web.id/" target="_blank" rel="noreferrer">
+            Lihat web
+            <span aria-hidden="true">
+              ↗
+            </span>
+          </a>
+          <button class="quiet" id="logout">
+            Keluar
+          </button>
+        </div>
+      </header>
+      <div class="layout">
+        <aside class="sidebar">
+          <p class="eyebrow">
+            RUANG KERJA
+          </p>
+          <nav aria-label="Bagian admin" id="admin-nav">
+            <a href="#anggota" data-page="anggota" aria-current="page">
+              01
+              <span>
+                Anggota &amp; pengurus
+              </span>
+            </a>
+            <a href="#jadwal" data-page="jadwal">
+              02
+              <span>
+                Jadwal kuliah
+              </span>
+            </a>
+            <a href="#galeri" data-page="galeri">
+              03
+              <span>
+                Galeri
+              </span>
+            </a>
+            <a href="#keamanan" data-page="keamanan">
+              04
+              <span>
+                Keamanan
+              </span>
+            </a>
+          </nav>
+          <div class="sidebar-note">
+            Perubahan tersimpan dan ditampilkan pada web Heroclass.
+          </div>
+        </aside>
+        <main class="workspace">
+          <div class="welcome">
+            <div>
+              <span class="eyebrow">
+                PGSD H · UNIVERSITAS NEGERI SURABAYA
+              </span>
+              <h1 id="page-title">
+                Anggota &amp; pengurus
+              </h1>
+              <p id="page-description">
+                Kelola nama, jabatan, dan foto profil kelas.
+              </p>
+            </div>
+            <div class="save-indicator">
+              <span>
+              </span>
+              Tersambung
+            </div>
+          </div>
+          <p class="status global-status" id="global-status" role="status" aria-live="polite">
+          </p>
+          <section class="panel-section" id="section-anggota">
+            <div class="panel-grid">
+              <div class="card editor-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      PROFIL KELAS
+                    </span>
+                    <h2 id="member-form-title">
+                      Tambah anggota
+                    </h2>
+                  </div>
+                  <button type="button" class="text-button hidden" id="cancel-member">
+                    Batal edit
+                  </button>
+                </div>
+                <form id="member-form" class="form-grid">
+                  <input type="hidden" name="id">
+                  <label>
+                    Nama lengkap
+                    <input name="name" maxlength="100" autocomplete="name" required placeholder="Nama anggota">
+                  </label>
+                  <label>
+                    Jabatan atau penanggung jawab
+                    <span class="optional">
+                      Satu jabatan per baris · PJ, matkul, atau mata kuliah masuk ke bagian penanggung jawab
+                    </span>
+                    <textarea name="role" maxlength="500" rows="3" placeholder="Ketua kelas&#10;PJ: Matematika"></textarea>
+                  </label>
+                  <fieldset class="photo-field">
+                    <legend>
+                      Foto profil
+                      <span class="optional">
+                        JPG, PNG, WebP · maks. 5 MB
+                      </span>
+                    </legend>
+                    <div class="photo-row">
+                      <span class="avatar-placeholder" id="member-avatar">
+                        H
+                      </span>
+                      <div>
+                        <label class="upload-button" for="member-photo">
+                          Pilih foto
+                        </label>
+                        <input id="member-photo" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden">
+                        <p class="upload-status" id="member-upload-status">
+                          Foto membantu teman mengenali profil anggota.
+                        </p>
+                        <button type="button" class="text-button hidden" id="remove-member-photo">
+                          Hapus foto
+                        </button>
+                      </div>
+                    </div>
+                  </fieldset>
+                  <button class="primary" type="submit" id="member-save">
+                    Simpan anggota
+                  </button>
+                </form>
+              </div>
+              <div class="card list-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      DAFTAR KELAS
+                    </span>
+                    <h2>
+                      Anggota tersimpan
+                    </h2>
+                  </div>
+                  <span class="count" id="member-count">
+                    0
+                  </span>
+                </div>
+                <div id="member-list" class="record-list">
+                  <p class="empty-copy">
+                    Memuat daftar…
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="panel-section hidden" id="section-jadwal">
+            <div class="panel-grid">
+              <div class="card editor-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      AKADEMIK
+                    </span>
+                    <h2 id="schedule-form-title">
+                      Tambah jadwal
+                    </h2>
+                  </div>
+                  <button type="button" class="text-button hidden" id="cancel-schedule">
+                    Batal edit
+                  </button>
+                </div>
+                <form id="schedule-form" class="form-grid">
+                  <input type="hidden" name="id">
+                  <label>
+                    Hari
+                    <select name="day" required>
+                      <option value="">
+                        Pilih hari
+                      </option>
+                      <option>
+                        Senin
+                      </option>
+                      <option>
+                        Selasa
+                      </option>
+                      <option>
+                        Rabu
+                      </option>
+                      <option>
+                        Kamis
+                      </option>
+                      <option>
+                        Jumat
+                      </option>
+                      <option>
+                        Sabtu
+                      </option>
+                    </select>
+                  </label>
+                  <label>
+                    Mata kuliah
+                    <input name="course" required maxlength="100" placeholder="Nama mata kuliah">
+                  </label>
+                  <div class="time-grid">
+                    <label>
+                      Mulai
+                      <input name="start" type="time" required>
+                    </label>
+                    <label>
+                      Selesai
+                      <input name="end" type="time" required>
+                    </label>
+                  </div>
+                  <label>
+                    Ruang
+                    <span class="optional">
+                      Opsional
+                    </span>
+                    <input name="room" maxlength="100" placeholder="Contoh: Gedung A · 204">
+                  </label>
+                  <button class="primary" type="submit">
+                    Simpan jadwal
+                  </button>
+                </form>
+              </div>
+              <div class="card list-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      MINGGU KULIAH
+                    </span>
+                    <h2>
+                      Jadwal tersimpan
+                    </h2>
+                  </div>
+                </div>
+                <div id="schedule-list" class="record-list">
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="panel-section hidden" id="section-galeri">
+            <div class="panel-grid">
+              <div class="card editor-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      CERITA KELAS
+                    </span>
+                    <h2 id="gallery-form-title">
+                      Tambah momen
+                    </h2>
+                  </div>
+                  <button type="button" class="text-button hidden" id="cancel-gallery">
+                    Batal edit
+                  </button>
+                </div>
+                <form id="gallery-form" class="form-grid">
+                  <input type="hidden" name="id">
+                  <label>
+                    Judul momen
+                    <input name="title" required maxlength="120" placeholder="Contoh: Hari pertama kuliah">
+                  </label>
+                  <label>
+                    Cerita
+                    <span class="optional">
+                      Opsional
+                    </span>
+                    <textarea name="caption" maxlength="500" rows="3" placeholder="Ceritakan sedikit tentang momen ini">
+                  </textarea>
+                  </label>
+                  <label>
+                    Tanggal
+                    <span class="optional">
+                      Opsional
+                    </span>
+                    <input name="date" type="date">
+                  </label>
+                  <fieldset class="photo-field">
+                    <legend>
+                      Foto momen
+                      <span class="optional">
+                        JPG, PNG, WebP · maks. 5 MB
+                      </span>
+                    </legend>
+                    <label class="upload-button" for="gallery-photo">
+                      Pilih foto
+                    </label>
+                    <input id="gallery-photo" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden">
+                    <p id="gallery-upload-status" class="upload-status">
+                      Unggah foto untuk momen ini.
+                    </p>
+                    <button type="button" class="text-button hidden" id="remove-gallery-photo">
+                      Hapus foto
+                    </button>
+                  </fieldset>
+                  <button class="primary" type="submit">
+                    Simpan momen
+                  </button>
+                </form>
+              </div>
+              <div class="card list-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      ALBUM HEROCLASS
+                    </span>
+                    <h2>
+                      Momen tersimpan
+                    </h2>
+                  </div>
+                </div>
+                <div id="gallery-list" class="record-list">
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="panel-section hidden" id="section-keamanan">
+            <div class="panel-grid">
+              <div class="card editor-card">
+                <div class="card-head">
+                  <div>
+                    <span class="eyebrow">
+                      AKUN ADMIN
+                    </span>
+                    <h2>
+                      Ganti kata sandi
+                    </h2>
+                  </div>
+                </div>
+                <p class="section-help">
+                  Gunakan kata sandi baru dengan minimal 12 karakter. Setelah diganti, sesi admin lain akan berakhir.
+                </p>
+                <form id="password-form" class="form-grid">
+                  <label>
+                    Kata sandi saat ini
+                    <input name="current" type="password" autocomplete="current-password" required>
+                  </label>
+                  <label>
+                    Kata sandi baru
+                    <input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+                  </label>
+                  <label>
+                    Ulangi kata sandi baru
+                    <input name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+                  </label>
+                  <button class="primary" type="submit">
+                    Perbarui kata sandi
+                  </button>
+                  <p id="password-status" class="status" role="status">
+                  </p>
+                </form>
+              </div>
+              <div class="card list-card security-card">
+                <span class="eyebrow">
+                  PENGELOLAAN AKSES
+                </span>
+                <h2>
+                  Admin terlindungi
+                </h2>
+                <p>
+                  Kata sandi tidak disimpan di perangkat. Kamu akan keluar otomatis setelah 8 jam tanpa sesi aktif.
+                </p>
+                <p>
+                  Untuk keamanan, pakai kata sandi yang hanya digunakan oleh pengelola tepercaya.
+                </p>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

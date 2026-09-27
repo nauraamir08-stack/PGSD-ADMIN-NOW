@@ -74,7 +74,7 @@ function recordNode(item, type) {
   } else row.append(make('span', 'record-initial', label(item).slice(0, 1).toUpperCase()));
   const info = make('div', 'record-info');
   info.append(make('strong', '', label(item)));
-  const detail = type === 'member' ? (item.role || 'Anggota kelas')
+  const detail = type === 'member' ? (item.role ? item.role.split(/\r?\n/).map((role) => role.trim()).filter(Boolean).join(' · ') : 'Anggota kelas')
     : type === 'schedule' ? `${item.day} · ${item.start_time.slice(0, 5)}–${item.end_time.slice(0, 5)}`
       : [item.event_date, item.caption].filter(Boolean).join(' · ') || 'Momen bersama';
   info.append(make('span', '', detail)); row.append(info);
@@ -185,7 +185,11 @@ async function upload(input, type) {
 }
 
 function payload(type, form) {
-  if (type === 'member') return { name: form.elements.name.value.trim(), role: form.elements.role.value.trim(), photo_path: state.uploads.member || null };
+  if (type === 'member') return {
+    name: form.elements.name.value.trim(),
+    role: form.elements.role.value.split(/\r?\n/).map((role) => role.trim()).filter(Boolean).join('\n'),
+    photo_path: state.uploads.member || null
+  };
   if (type === 'schedule') return { day: form.elements.day.value, course: form.elements.course.value.trim(), start_time: form.elements.start.value, end_time: form.elements.end.value, room: form.elements.room.value.trim() };
   return { title: form.elements.title.value.trim(), caption: form.elements.caption.value.trim(), event_date: form.elements.date.value || null };
 }
