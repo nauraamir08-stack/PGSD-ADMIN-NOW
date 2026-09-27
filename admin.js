@@ -92,7 +92,7 @@ function renderLists() {
 
 async function refresh() {
   const [members, schedules, gallery] = await Promise.all([
-    db.from('class_members').select('*').order('name'),
+    db.from('class_members').select('*').order('created_at', { ascending: true }),
     db.from('class_schedules').select('*'),
     db.from('class_gallery').select('*').order('event_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false })
   ]);
