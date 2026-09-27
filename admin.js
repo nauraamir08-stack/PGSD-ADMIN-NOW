@@ -17,6 +17,11 @@ function notice(target, message, type = '') {
 
 function publicUrl(path) { return path ? db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl : ''; }
 function label(item) { return item.name || item.course || item.title || 'data ini'; }
+function usernameEmail(username) {
+  const value = username.trim().toLowerCase();
+  if (!/^[a-z0-9._-]{3,32}$/.test(value)) throw new Error('Username hanya boleh berisi huruf, angka, titik, garis bawah, atau tanda minus.');
+  return `${value}@admin.pgsdheroclass.web.id`;
+}
 
 function showLogin(message = '', type = '') {
   $('#sign-in').classList.remove('hidden');
@@ -220,8 +225,10 @@ function navigate(page) {
 document.addEventListener('DOMContentLoaded', () => {
   $('#login-form').addEventListener('submit', async (event) => {
     event.preventDefault(); const button = event.currentTarget.querySelector('button'); button.disabled = true;
-    const { error } = await db.auth.signInWithPassword({ email: $('#login-email').value.trim(), password: $('#login-password').value });
-    if (error) notice($('#login-status'), error.message, 'error'); else await requireSession();
+    try {
+      const { error } = await db.auth.signInWithPassword({ email: usernameEmail($('#login-username').value), password: $('#login-password').value });
+      if (error) notice($('#login-status'), 'Username atau kata sandi tidak sesuai.', 'error'); else await requireSession();
+    } catch (error) { notice($('#login-status'), error.message, 'error'); }
     button.disabled = false;
   });
   for (const type of ['member', 'schedule', 'gallery']) formFor(type).addEventListener('submit', (event) => { event.preventDefault(); save(type, event.currentTarget); });
